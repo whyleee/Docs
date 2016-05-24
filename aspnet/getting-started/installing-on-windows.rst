@@ -20,7 +20,7 @@ The easiest way to get started building applications with ASP.NET 5 is to instal
 
   .. image:: installing-on-windows/_static/web-dev-tools.png
 
-2. Install `ASP.NET 5 <https://go.microsoft.com/fwlink/?LinkId=627627>`_. 
+2. Install `ASP.NET 5 <http://go.microsoft.com/fwlink/?LinkID=799532>`_. 
   
   This will install the latest ASP.NET 5 runtime and tooling.
   
