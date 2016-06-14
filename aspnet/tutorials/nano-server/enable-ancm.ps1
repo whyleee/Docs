@@ -22,3 +22,7 @@ New-IISConfigCollectionElement $globalModules -ConfigAttribute @{"name"="AspNetC
 $modules = Get-IISConfigSection "system.webServer/modules" | Get-IISConfigCollection
 New-IISConfigCollectionElement $modules -ConfigAttribute @{"name"="AspNetCoreModule"}
 $sm.CommitChanges()
+
+# backup existing config
+copy C:\Windows\System32\inetsrv\config\applicationHost.config C:\Windows\System32\inetsrv\config\applicationHost_BeforeInstallingANCM.config
+copy C:\Windows\System32\inetsrv\config\applicationHost.config C:\Windows\System32\inetsrv\config\applicationHost_AfterInstallingANCM.config

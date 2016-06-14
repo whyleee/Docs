@@ -68,21 +68,48 @@ Add the ``NanoServerPackage`` provider from the PowerShell gallery. Once the pro
 Installing the ASP.NET Core Module
 ----------------------------------
 
-The :ref:`ASP.NET Core Module <http-platformhandler>` is an IIS 7.5+ module which is responsible for process management of ASP.NET Core HTTP listeners and to proxy requests to processes that it manages. Currently, installing ASP.NET Core Module requires manual steps.
-
-1. Install the target version of .NET Core Windows Server Hosting bundle <http://go.microsoft.com/fwlink/?LinkId=798480>__ on a regular (non-Nano) machine that has IIS enabled.
-
-2. Copy the following files from the non-Nano machine to the Nano machine:
-
-  * *$env:windir\\System32\\inetsrv\\aspnetcore.dll*
-  * *$env:windir\\System32\\inetsrv\\config\\schema\\aspnetcore_schema.xml*
-
-On the Nano machine you’ll need to copy those two files to their respective locations.
+The :ref:`ASP.NET Core Module <http-platformhandler>` is an IIS 7.5+ module which is responsible for process management of ASP.NET Core HTTP listeners and to proxy requests to processes that it manages. Currently, installing ASP.NET Core Module requires the following script:
 
 .. code:: ps1
 
-  Copy-Item -ToSession $s -Path .\aspnetcore.dll -Destination C:\Windows\System32\inetsrv
-  Copy-Item -ToSession $s -Path .\aspnetcore_schema.xml -Destination C:\Windows\System32\inetsrv\config\schema
+  copy <update-this>\aspnetcore_schema.xml C:\windows\system32\inetsrv\config\schema
+  copy <update-this>\aspnetcore.dll C:\windows\system32\inetsrv
+
+  # Backup existing applicationHost.config
+  copy C:\Windows\System32\inetsrv\config\applicationHost.config C:\Windows\System32\inetsrv\config\applicationHost_BeforeInstallingANCM.config
+
+  Import-Module IISAdministration
+
+  # Initialize variables
+  $aspNetCoreHandlerFilePath="C:\windows\system32\inetsrv\aspnetcore.dll"
+  Reset-IISServerManager -confirm:$false
+  $sm = Get-IISServerManager
+
+  # Add AppSettings section 
+  $sm.GetApplicationHostConfiguration().RootSectionGroup.Sections.Add("appSettings")
+
+  # Set Allow for handlers section
+  $appHostconfig = $sm.GetApplicationHostConfiguration()
+  $section = $appHostconfig.GetSection("system.webServer/handlers")
+  $section.OverrideMode="Allow"
+
+  # Add aspNetCore section to system.webServer
+  $sectionaspNetCore = $appHostConfig.RootSectionGroup.SectionGroups["system.webServer"].Sections.Add("aspNetCore")
+  $sectionaspNetCore.OverrideModeDefault = "Allow"
+  $sm.CommitChanges()
+
+  # Configure globalModule
+  Reset-IISServerManager -confirm:$false
+  $globalModules = Get-IISConfigSection "system.webServer/globalModules" | Get-IISConfigCollection
+  New-IISConfigCollectionElement $globalModules -ConfigAttribute @{"name"="AspNetCoreModule";"image"=$aspNetCoreHandlerFilePath}
+
+  # Configure module
+  $modules = Get-IISConfigSection "system.webServer/modules" | Get-IISConfigCollection
+  New-IISConfigCollectionElement $modules -ConfigAttribute @{"name"="AspNetCoreModule"}
+
+  # Backup existing applicationHost.config
+  copy C:\Windows\System32\inetsrv\config\applicationHost.config C:\Windows\System32\inetsrv\config\applicationHost_AfterInstallingANCM.config  
+  
 
 Enabling the ASP.NET Core Module
 --------------------------------
@@ -97,7 +124,7 @@ Execute the following PowerShell script in a remote PowerShell session to enable
 Manually Editing *applicationHost.config*
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-You can skip this section if you already ran the PowerShell script above. Though is not recommended, you can alternatively enable the HttpPlatformHandler by manually editing the *applicationHost.config* file.
+You can skip this section if you already ran the PowerShell script above. Though is not recommended, you can alternatively enable the ASP.NET Core Module by manually editing the *applicationHost.config* file.
 
 Open up *C:\\Windows\\System32\\inetsrv\\config\\applicationHost.config*
 
@@ -150,7 +177,14 @@ Copy over the published output of your existing application to the Nano server. 
 
   $ip = "10.83.181.14" # replace with the correct IP address
   $s = New-PSSession -ComputerName $ip -Credential ~\Administrator
-  Copy-Item -ToSession $s -Path <path-to-src>\bin\output\ -Destination C:\HelloAspNet5 -Recurse
+  Copy-Item -ToSession $s -Path <path-to-src>\bin\output\ -Destination C:\HelloAspNetCore -Recurse
+  
+You may also need to make the following OS changes:
+
+.. code:: ps1
+
+  netsh advfirewall firewall set rule group="File and Printer Sharing" new enable=yes
+  net share musicstore=c:\deployed\musicstore /GRANT:EVERYONE`,FULL
 
 Use the following PowerShell snippet to create a new site in IIS for the published app. This script uses the ``DefaultAppPool`` for simplicity. For more considerations on running under an application pool, see :ref:`apppool`.
 
