@@ -1,5 +1,6 @@
 Import-Module IISAdministration 
-
+#backup
+copy C:\Windows\System32\inetsrv\config\applicationHost.config C:\Windows\System32\inetsrv\config\applicationHost_BeforeInstallingANCM.config
 $sm = Get-IISServerManager
 
 # Add AppSettings section (for Asp.Net Core)
@@ -24,5 +25,4 @@ New-IISConfigCollectionElement $modules -ConfigAttribute @{"name"="AspNetCoreMod
 $sm.CommitChanges()
 
 # backup existing config
-copy C:\Windows\System32\inetsrv\config\applicationHost.config C:\Windows\System32\inetsrv\config\applicationHost_BeforeInstallingANCM.config
 copy C:\Windows\System32\inetsrv\config\applicationHost.config C:\Windows\System32\inetsrv\config\applicationHost_AfterInstallingANCM.config
