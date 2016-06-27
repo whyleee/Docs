@@ -179,7 +179,7 @@ The current culture on a request is set in the localization :doc:`/fundamentals/
   :lines: 107, 136-159
   :dedent: 6
 
-:dn:method:`~Microsoft.AspNetCore.Builder.ApplicationBuilderExtensions.UseRequestLocalization` initializes a :dn:class:`~Microsoft.AspNetCore.Builder.RequestLocalizationOptions` object. On every request the list of `RequestCultureProvider <https://docs.asp.net/projects/api/en/latest/autoapi/Microsoft/AspNetCore/Localization/RequestCultureProvider/index.html>`__ in the `RequestLocalizationOptions <https://docs.asp.net/projects/api/en/latest/autoapi/Microsoft/AspNetCore/Localization/RequestLocalizationOptions/index.html>`__ is enumerated and the first provider that can successfully determine the request culture is used. The default providers come from the ``RequestLocalizationOptions`` class:
+``UseRequestLocalization` initializes a ``RequestLocalizationMiddleware`` object. On every request the list of ``RequestCultureProvider`` in the ``RequestLocalizationOptions`` is enumerated and the first provider that can successfully determine the request culture is used. The default providers come from the ``RequestLocalizationOptions`` class:
 
 #. `QueryStringRequestCultureProvider <https://docs.asp.net/projects/api/en/latest/autoapi/Microsoft/AspNetCore/Localization/QueryStringRequestCultureProvider/index.html>`__
 #. `CookieRequestCultureProvider <https://docs.asp.net/projects/api/en/latest/autoapi/Microsoft/AspNetCore/Localization/CookieRequestCultureProvider/index.html>`__
