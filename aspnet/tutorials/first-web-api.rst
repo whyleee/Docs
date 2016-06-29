@@ -116,7 +116,7 @@ In the ``ConfigureServices`` method, add the highlighted code:
 .. literalinclude:: first-web-api/sample/src/TodoApi/Startup.cs
   :language: c#
   :lines: 13-23
-  :emphasize-lines: 21-22
+  :emphasize-lines: 9-10
   :dedent: 8
 
 Add a controller
